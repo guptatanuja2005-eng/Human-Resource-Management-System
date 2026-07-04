@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useAuth } from '../Context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import { Bell, LogOut, Menu, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
 const Navbar = ({ toggleSidebar, title = 'Dashboard' }) => {
