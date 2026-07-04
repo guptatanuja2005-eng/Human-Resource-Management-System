@@ -33,7 +33,8 @@ const Signup = () => {
     setLoading(true);
     try {
       await signup(formData);
-      navigate('/');
+      alert("Registration successful! Please login.");
+      navigate("/");
     } catch (err) {
       console.error(err);
     } finally {

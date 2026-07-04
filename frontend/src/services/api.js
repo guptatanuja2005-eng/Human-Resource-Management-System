@@ -2,87 +2,90 @@ import axios from "axios";
 
 const api = axios.create({
   baseURL: "http://localhost:3000/api",
-  withCredentials: true,
 });
 
-// 🔐 Attach JWT token
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("token");
+// Attach JWT token automatically
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
 
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
 
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
-
+  return config;
+});
 
 // ================= AUTH =================
 
-export const signup = (data) => api.post("/auth/signup", data);
+export const signup = async (userData) => {
+  const res = await api.post("/auth/signup", userData);
+  return res.data;
+};
 
-export const login = async (data) => {
-  const res = await api.post("/auth/login", data);
-
-  // store token
-  localStorage.setItem("token", res.data.token);
+export const login = async (email, password) => {
+  const res = await api.post("/auth/login", {
+    email,
+    password,
+  });
 
   return res.data;
 };
 
-export const getProfile = () => api.get("/auth/profile");
-
-
-
-// ================= EMPLOYEES =================
-// (Only if your backend has this route)
-
-export const getEmployees = () => api.get("/employees");
-
-
+export const getProfile = async () => {
+  const res = await api.get("/auth/profile");
+  return res.data;
+};
 
 // ================= ATTENDANCE =================
 
-export const checkIn = () => api.post("/attendance/checkin");
+export const getAttendance = async () => {
+  const res = await api.get("/attendance");
+  return res.data.attendance;
+};
 
-export const checkOut = () => api.post("/attendance/checkout");
+export const checkIn = async () => {
+  const res = await api.post("/attendance/checkin");
+  return res.data;
+};
 
-export const getAttendance = () => api.get("/attendance");
-
-
+export const checkOut = async () => {
+  const res = await api.post("/attendance/checkout");
+  return res.data;
+};
 
 // ================= LEAVE =================
 
-export const applyLeave = (data) => api.post("/leave/apply", data);
+export const applyLeave = async (data) => {
+  const res = await api.post("/leave/apply", data);
+  return res.data;
+};
 
-export const getLeaves = () => api.get("/leave");
+export const getLeaves = async () => {
+  const res = await api.get("/leave");
+  return res.data.leaves;
+};
 
-export const updateLeaveStatus = (id, status) =>
-  api.put(`/leave/${id}`, { status });
-
-
+export const updateLeaveStatus = async (id, status) => {
+  const res = await api.put(`/leave/${id}`, { status });
+  return res.data;
+};
 
 // ================= PAYROLL =================
-// (Only if backend exists)
 
-export const getPayroll = () => api.get("/payroll");
+export const getPayroll = async () => {
+  const res = await api.get("/payroll/me");
+  return res.data;
+};
 
-
-
-// ✅ Export as object (IMPORTANT)
-const apiService = {
+export default {
   signup,
   login,
   getProfile,
-  getEmployees,
   getAttendance,
+  checkIn,
+  checkOut,
+  applyLeave,
   getLeaves,
-  getPayroll,
   updateLeaveStatus,
+  getPayroll,
 };
-
-export default apiService;

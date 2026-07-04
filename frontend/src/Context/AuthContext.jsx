@@ -11,82 +11,90 @@ export const AuthProvider = ({ children }) => {
 
   // ✅ LOAD USER ON REFRESH
   useEffect(() => {
-    const loadUser = async () => {
-      if (token) {
-        try {
-          apiService.setAuthToken(token);
 
-          const userData = await apiService.getProfile();
+  const loadUser = async () => {
 
-          // 🔥 FIX: ensure correct structure
-          setUser(userData?.user || userData);
-
-        } catch (err) {
-          console.error("Failed to load user profile:", err);
-          logout(); // auto logout if token invalid
-        }
-      }
+    if (!token) {
       setLoading(false);
-    };
+      return;
+    }
 
-    loadUser();
-  }, [token]);
+    try {
+
+      const data = await apiService.getProfile();
+
+      setUser(data.user);
+
+    } catch (err) {
+
+      console.error(err);
+
+      logout();
+
+    }
+
+    setLoading(false);
+
+  };
+
+  loadUser();
+
+}, [token]);
 
   // ✅ LOGIN
   const login = async (email, password) => {
-    setError(null);
-    setLoading(true);
+  setError(null);
+  setLoading(true);
 
-    try {
-      const data = await apiService.login(email, password);
+  try {
+    const data = await apiService.login(email, password);
 
-      // 🔥 SAVE TOKEN
-      localStorage.setItem('token', data.token);
-      apiService.setAuthToken(data.token);
+    localStorage.setItem("token", data.token);
 
-      setToken(data.token);
+    setToken(data.token);
+    setUser(data.user);
 
-      // 🔥 FIX: safe user extraction
-      const loggedUser = data.user || data;
-      setUser(loggedUser);
+    setLoading(false);
 
-      setLoading(false);
+    return data.user;
 
-      return loggedUser; // 🔥 IMPORTANT (used in Login.jsx)
+  } catch (err) {
+    setError(
+      err.response?.data?.message ||
+      "Login failed. Please check credentials."
+    );
 
-    } catch (err) {
-      setError(err.response?.data?.message || 'Login failed. Please check credentials.');
-      setLoading(false);
-      throw err;
-    }
-  };
+    setLoading(false);
+
+    throw err;
+  }
+};
 
   // ✅ SIGNUP
   const signup = async (formData) => {
-    setError(null);
-    setLoading(true);
+  setError(null);
+  setLoading(true);
 
-    try {
-      const data = await apiService.signup(formData);
+  try {
 
-      localStorage.setItem('token', data.token);
-      apiService.setAuthToken(data.token);
+    const data = await apiService.signup(formData);
 
-      setToken(data.token);
+    setLoading(false);
 
-      const newUser = data.user || data;
-      setUser(newUser);
+    return data.user;
 
-      setLoading(false);
+  } catch (err) {
 
-      return newUser;
+    setError(
+      err.response?.data?.message ||
+      "Signup failed."
+    );
 
-    } catch (err) {
-      setError(err.response?.data?.message || 'Signup failed. Please try again.');
-      setLoading(false);
-      throw err;
-    }
-  };
+    setLoading(false);
+
+    throw err;
+  }
+};
 
   // ✅ LOGOUT
   const logout = () => {
