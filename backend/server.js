@@ -3,11 +3,14 @@ const cors = require("cors");
 require("dotenv").config();
 
 const pool = require("./config/db");
+const authRoutes = require("./routes/authRoutes");
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+
+app.use("/api/auth", authRoutes);
 
 app.get("/", (req, res) => {
     res.send("HRMS Backend Running 🚀");
@@ -21,6 +24,6 @@ app.listen(PORT, async () => {
         console.log("Connected to PostgreSQL");
         console.log(`Server running on port ${PORT}`);
     } catch (err) {
-        console.error("❌ Database connection failed:", err.message);
+        console.error("DB connection failed", err);
     }
 });
