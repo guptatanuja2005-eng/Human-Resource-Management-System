@@ -22,15 +22,34 @@ const Leave = () => {
     reason: ''
   });
   const fetchData = async () => {
-    try {
-      const data = await apiService.getLeaves();
-      setLeaves(data);
-    } catch (err) {
-      console.error("Failed to fetch leaves list:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  try {
+    const data = await apiService.getLeaves();
+
+    const formatted = data.map((leave) => {
+      const start = new Date(leave.start_date);
+      const end = new Date(leave.end_date);
+
+      const diff =
+        Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+
+      return {
+        id: leave.id,
+        type: leave.leave_type,
+        startDate: leave.start_date,
+        endDate: leave.end_date,
+        reason: leave.reason,
+        status: leave.status,
+        days: diff
+      };
+    });
+
+    setLeaves(formatted);
+  } catch (err) {
+    console.error("Failed to fetch leaves list:", err);
+  } finally {
+    setLoading(false);
+  }
+};
   useEffect(() => {
     fetchData();
   }, []);
@@ -45,13 +64,23 @@ const Leave = () => {
     }
     setFormLoading(true);
     try {
-      await apiService.applyLeave(formData);
+      await apiService.applyLeave({
+  leaveType: formData.type,
+  startDate: formData.startDate,
+  endDate: formData.endDate,
+  reason: formData.reason,
+});
       setModalOpen(false);
       setFormData({ type: 'Casual Leave', startDate: '', endDate: '', reason: '' });
       fetchData();
-    } catch (err) {
-      alert('Failed to apply for leave');
-    } finally {
+    } 
+    catch (err) {
+      console.log(err);
+      console.log(err.response);
+      console.log(err.response?.data);
+      alert(err.response?.data?.message || "Failed to apply for leave");
+    }
+    finally {
       setFormLoading(false);
     }
   };
